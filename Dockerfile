@@ -10,10 +10,10 @@ ENV GO111MODULE=on
 
 WORKDIR /app
 COPY . .
-RUN GOOS=linux GOARCH=amd64 go build -o app ./cmd
+RUN GOOS=linux GOARCH=amd64 go build -buildvcs=false -o freq ./cmd
 
 # image
 FROM alpine:edge
 WORKDIR /
-COPY --from=builder /app/app .
-ENTRYPOINT ["/app"]
+COPY --from=builder /app .
+ENTRYPOINT ["/freq", "--config", "./configs/config.yaml"]
