@@ -1,16 +1,8 @@
 package internal
 
-import "container/heap"
-
-type Element struct {
-	Id       int64
-	DataId   uint32
-	Distance float32
-}
-
 type Heap struct {
-	Elements []Element
-	less     func(elements []Element, i, j int) bool
+	Elements []*Element
+	less     func(elements []*Element, i, j int) bool
 }
 
 func (h Heap) Len() int { return len(h.Elements) }
@@ -20,7 +12,7 @@ func (h Heap) Swap(i, j int) { h.Elements[i], h.Elements[j] = h.Elements[j], h.E
 func (h Heap) Less(i, j int) bool { return h.less(h.Elements, i, j) }
 
 func (h *Heap) Push(x any) {
-	h.Elements = append(h.Elements, x.(Element))
+	h.Elements = append(h.Elements, x.(*Element))
 }
 
 func (h *Heap) Pop() any {
@@ -36,63 +28,27 @@ func (h *Heap) Peek() any {
 	return h.Elements[h.Len()-1]
 }
 
-func NewMinHeap(capacity int) *Heap {
+func NewMinHeap() *Heap {
 	return &Heap{
-		Elements: make([]Element, capacity),
-		less: func(elements []Element, i, j int) bool {
-			return elements[i].Distance < elements[j].Distance
+		Elements: []*Element{},
+		less: func(elements []*Element, i, j int) bool {
+			return elements[i].Frequency < elements[j].Frequency
 		},
 	}
 }
 
-func NewMinHeapFromSlice(s []Element) *Heap {
-	h := Heap{
-		Elements: s,
-		less: func(elements []Element, i, j int) bool {
-			return elements[i].Distance < elements[j].Distance
-		},
-	}
-
-	heap.Init(&h)
-
-	return &h
-}
-
-func NewMinHeapFromSliceDeep(s []Element, capacity int) *Heap {
-	h := Heap{
-		less: func(elements []Element, i, j int) bool {
-			return elements[i].Distance < elements[j].Distance
-		},
-	}
-
-	h.Elements = make([]Element, len(s), capacity)
-	copy(h.Elements, s)
-
-	heap.Init(&h)
-
-	return &h
-}
-
-func NewMaxHeap(capacity int) *Heap {
+func NewMaxHeap() *Heap {
 	return &Heap{
-		Elements: make([]Element, capacity),
-		less: func(elements []Element, i, j int) bool {
-			return elements[i].Distance > elements[j].Distance
+		Elements: []*Element{},
+		less: func(elements []*Element, i, j int) bool {
+			return elements[i].Frequency > elements[j].Frequency
 		},
 	}
 }
 
-func NewMaxHeapFromSliceDeep(s []Element, capacity int) *Heap {
-	h := Heap{
-		less: func(elements []Element, i, j int) bool {
-			return elements[i].Distance > elements[j].Distance
-		},
+func elementCopy(e *Element) Element {
+	return Element{
+		Word:      e.Word,
+		Frequency: e.Frequency,
 	}
-
-	h.Elements = make([]Element, len(s), capacity)
-	copy(h.Elements, s)
-
-	heap.Init(&h)
-
-	return &h
 }

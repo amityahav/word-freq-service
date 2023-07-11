@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"wordStore/internal"
 )
@@ -14,5 +15,17 @@ func NewGetStatsHandler(store *internal.Store) *getStatsHandler {
 }
 
 func (h *getStatsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
+	stats, err := h.store.GetStats(ctx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(&stats)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

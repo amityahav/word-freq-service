@@ -13,6 +13,9 @@ const apiPrefix = "/api/v1"
 func NewAPI(config *internal.Config) *http.Server {
 	store := internal.NewStore()
 
+	// starting event-loop processing
+	go store.Maintain()
+
 	// init handlers
 	hch := handlers.NewHealthCheckHandler()
 	iwh := handlers.NewInsertWordsHandler(store)
