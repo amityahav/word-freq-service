@@ -29,6 +29,12 @@ the least frequent word and the median frequent word.
 -[ ] More test coverage including E2E and benchmarks
 
 ### How to run:
+
+#### Prerequisites:
+
+- Docker
+- Golang 1.20 (for tests)
+
 Configuration:
 ````yaml
 # listening address for incoming HTTP requests
