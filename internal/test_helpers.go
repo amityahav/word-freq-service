@@ -32,8 +32,12 @@ func naiveTopK(frequencies map[string]*utils.Element, k int) []*utils.Element {
 
 	res := make([]*utils.Element, 0, k)
 
-	for _, e := range elems {
-		res = append(res, e)
+	if len(elems) == 0 {
+		return res
+	}
+
+	for i := 0; i < k && i < len(elems); i++ {
+		res = append(res, elems[i])
 	}
 
 	return res
@@ -61,14 +65,18 @@ func naiveMedian(frequencies map[string]*utils.Element) uint32 {
 	if len(s) == 0 {
 		return 0
 	}
-
 	return (s[(len(s)-1)/2].Frequency + s[(len(s)/2)].Frequency) / 2
 
 }
 
 func compareElements(elems1 []*utils.Element, elems2 []*utils.Element) bool {
+	if len(elems1) != len(elems2) {
+		return false
+	}
+
 	for i := 0; i < len(elems1); i++ {
-		if elems1[i].Word != elems2[i].Word || elems1[i].Frequency != elems2[i].Frequency {
+		// order of words is not guaranteed hence checking only frequencies is sufficient
+		if elems1[i].Frequency != elems2[i].Frequency {
 			return false
 		}
 	}

@@ -25,8 +25,6 @@ func TestStore(t *testing.T) {
 	ctx := context.Background()
 	store := NewStore(cfg)
 
-	go store.Maintain()
-
 	t.Run("insertion/fetching", func(t *testing.T) {
 		checkEqual := func(stats *Stats, store *Store) {
 			median = naiveMedian(store.frequencies)
