@@ -26,7 +26,7 @@ the least frequent word and the median frequent word.
   all results from all the shards. the coordinator can be horizontally scaled as well as a stateful set and kept behind a load balancer to distribute the load.
 
 ### TODOs:
--[ ] More test coverage including E2E and benchmarks
+- [ ] More test coverage including E2E and benchmarks
 
 ### How to run:
 
