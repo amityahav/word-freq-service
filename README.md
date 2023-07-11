@@ -35,7 +35,7 @@ the least frequent word and the median frequent word.
 - Docker
 - Golang 1.20 (for tests)
 
-Configuration:
+#### Configuration:
 ````yaml
 # listening address for incoming HTTP requests
 listen_address: "0.0.0.0:5000"
