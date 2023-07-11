@@ -108,19 +108,3 @@ func (s *medianStore) inSmallHeapSet(e *utils.Element) bool {
 func (s *medianStore) inLargeHeapSet(e *utils.Element) bool {
 	return e.LargerIdx >= 0
 }
-
-//func (s *medianStore) putInSmallHeapSet(e *utils.Element) {
-//	e.InMedianStore |= 0x1
-//}
-//
-//func (s *medianStore) putInLargeHeapSet(e *utils.Element) {
-//	e.InMedianStore |= 0x2
-//}
-//
-//func (s *medianStore) removeFromSmallHeapSet(e *utils.Element) {
-//	e.InMedianStore &= 0x2
-//}
-//
-//func (s *medianStore) removeFromLargeHeapSet(e *utils.Element) {
-//	e.InMedianStore &= 0x1
-//}
