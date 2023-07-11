@@ -23,6 +23,7 @@ func (h *getStatsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&stats)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

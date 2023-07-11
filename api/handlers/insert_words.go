@@ -13,6 +13,10 @@ type Payload struct {
 	Words string `json:"words"`
 }
 
+type InsertResponse struct {
+	Message string `json:"message"`
+}
+
 type insertWordsHandler struct {
 	store      *internal.Store
 	payloadRgx *regexp.Regexp
@@ -40,15 +44,29 @@ func (h *insertWordsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.store.InsertWords(words)
+	h.store.Insert(words)
+
+	res := InsertResponse{Message: "words are scheduled for insertion"}
+
+	w.Header().Add("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(&res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (h *insertWordsHandler) validatePayload(p Payload) ([]string, error) {
 	if !h.payloadRgx.MatchString(p.Words) {
-		return nil, errors.New("words list must be of format: a,b,c")
+		return nil, ErrBadPayloadFormant
 	}
 
 	words := strings.Split(p.Words, ",")
 
+	for i := 0; i < len(words); i++ {
+		words[i] = strings.TrimSpace(words[i])
+	}
+
 	return words, nil
 }
+
+var ErrBadPayloadFormant = errors.New("words list must be of format: a,b,c")

@@ -3,6 +3,7 @@ package internal
 import (
 	"github.com/sirupsen/logrus"
 	"sync"
+	"wordStore/internal/utils"
 )
 
 type Config struct {
@@ -16,37 +17,28 @@ type StoreConfig struct {
 }
 
 type medianStore struct {
-	smaller *Heap
-	larger  *Heap
+	smaller *utils.Heap
+	larger  *utils.Heap
 }
 
 type topKStore struct {
 	k    int
-	heap *Heap
-}
-
-type leastStore struct {
-	// TODO: maybe we can use only the min from the smaller heap of the media store
+	heap *utils.Heap
 }
 
 type Store struct {
 	sync.RWMutex
 	logger *logrus.Logger
 
-	frequencies      map[string]*Element
+	frequencies      map[string]*utils.Element
 	medianStore      *medianStore
 	topKStore        *topKStore
-	least            *Heap
 	insertionChannel chan []string
 }
 
 type Stats struct {
-	TopK   []Element `json:"topK"`
-	Least  Element   `json:"least"`
-	Median Element   `json:"median"`
-}
-
-type Element struct {
-	Word      string `json:"word"`
-	Frequency uint32 `json:"frequency"`
+	K      int              `json:"k"`
+	TopK   []*utils.Element `json:"topK,omitempty"`
+	Least  uint32           `json:"least,omitempty"`
+	Median uint32           `json:"median,omitempty"`
 }

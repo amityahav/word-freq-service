@@ -4,16 +4,17 @@ import (
 	"context"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"sync"
+	"wordStore/internal/utils"
 )
 
 func NewStore(cfg StoreConfig) *Store {
 	s := Store{
 		logger:           logrus.New(),
-		frequencies:      map[string]*Element{},
+		frequencies:      map[string]*utils.Element{},
 		medianStore:      newMedianStore(),
 		topKStore:        newTopKStore(cfg.K),
-		least:            NewMinHeap(),
-		insertionChannel: make(chan []string, cfg.Capacity), //TODO: cfg param for buffering?
+		insertionChannel: make(chan []string, cfg.Capacity),
 	}
 
 	s.logger.SetFormatter(&logrus.JSONFormatter{})
@@ -39,9 +40,9 @@ func (s *Store) Maintain() {
 	}
 }
 
-// GetStats returns top-5 frequent words, the least frequent word, median frequent word
+// GetStats returns top-k frequent words, the least frequent word and the median frequent word
 func (s *Store) GetStats(ctx context.Context) (*Stats, error) {
-	s.RLock()
+	s.RLock() // blocking if an insertion is being processed
 	defer s.RUnlock()
 
 	output := make(chan Stats, 1)
@@ -56,38 +57,45 @@ func (s *Store) GetStats(ctx context.Context) (*Stats, error) {
 	}
 }
 
-// InsertWords simply adds new words to the insertion channel
-func (s *Store) InsertWords(words []string) {
+// Insert simply adds new words to the insertion channel
+func (s *Store) Insert(words []string) {
 	s.insertionChannel <- words
 }
 
-// insertWords inserts/ updates word's frequencies and update Store's internal data structures accordingly
+// insertWords inserts/updates words frequencies and update Store's internal data structures accordingly
 func (s *Store) insertWords(words []string) {
 	// locking is done only for synchronizing between writing/reading from store as writing performed sequentially
 	s.Lock()
 	defer s.Unlock()
 
+	var wg sync.WaitGroup
+
+	elements := map[string]*utils.Element{}
+
 	for _, w := range words {
 		// inserting to frequencies map
-		e := s.insertFreq(w)
-
-		// inserting to top-k heap
-		s.topKStore.insert(e)
-
-		// inserting to the median store
-
-		// inserting to the least heap
-
+		elements[w] = s.insertFreq(w)
 	}
+
+	// after inserting/updating all new words we can update store's internal data structures concurrently
+	wg.Add(1)
+	go s.topKStore.insert(elements, &wg)
+
+	wg.Add(1)
+	go s.medianStore.insert(elements, &wg)
+
+	wg.Wait()
 }
 
-func (s *Store) insertFreq(word string) *Element {
-	var e *Element
+func (s *Store) insertFreq(word string) *utils.Element {
+	var e *utils.Element
 
 	if elem, ok := s.frequencies[word]; !ok {
-		e = &Element{
-			Word:      word,
-			Frequency: 1,
+		e = &utils.Element{
+			Word:       word,
+			Frequency:  1,
+			SmallerIdx: -1,
+			LargerIdx:  -1,
 		}
 
 		s.frequencies[word] = e
@@ -100,17 +108,12 @@ func (s *Store) insertFreq(word string) *Element {
 }
 
 func (s *Store) getStats(output chan Stats) {
-	// could be parallelized but those are O(1) operations
-	topK, least, median := s.topKStore.getTopK(), s.getLeast(), s.medianStore.getMedian()
+	topKFreq, leastFreq, medianFreq := s.topKStore.getTopK(), s.medianStore.getLeast(), s.medianStore.getMedian()
 
 	output <- Stats{
-		TopK:   topK,
-		Least:  least,
-		Median: median,
+		K:      s.topKStore.k,
+		TopK:   topKFreq,
+		Least:  leastFreq,
+		Median: medianFreq,
 	}
-}
-
-func (s *Store) getLeast() Element {
-	least := s.least.Peek().(*Element)
-	return elementCopy(least)
 }
