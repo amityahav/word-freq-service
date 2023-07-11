@@ -1,5 +1,5 @@
 # listening address for incoming HTTP requests
-listen_address: "localhost:5000"
+listen_address: "0.0.0.0:5000"
 store:
   # top-k word frequencies to return
   k: 5
