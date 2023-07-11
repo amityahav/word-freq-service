@@ -1,2 +1,8 @@
 # listening address for incoming HTTP requests
 listen_address: "localhost:5000"
+store:
+  # top-k word frequencies to return
+  k: 5
+
+  # insertion channel buffer capacity
+  capacity: 1000

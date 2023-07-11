@@ -11,7 +11,7 @@ const apiPrefix = "/api/v1"
 
 // NewAPI creates a new http server for the service
 func NewAPI(config *internal.Config) *http.Server {
-	store := internal.NewStore()
+	store := internal.NewStore(config.Store)
 
 	// starting event-loop processing
 	go store.Maintain()

@@ -4,20 +4,16 @@ import (
 	"context"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"sort"
 )
 
-func NewStore() *Store {
+func NewStore(cfg StoreConfig) *Store {
 	s := Store{
-		logger:      logrus.New(),
-		frequencies: map[string]*Element{},
-		ms: &medianStore{
-			smaller: NewMaxHeap(),
-			larger:  NewMinHeap(),
-		},
-		topK:             NewMinHeap(),
+		logger:           logrus.New(),
+		frequencies:      map[string]*Element{},
+		medianStore:      newMedianStore(),
+		topKStore:        newTopKStore(cfg.K),
 		least:            NewMinHeap(),
-		insertionChannel: make(chan []string, 1000), //TODO: cfg param for buffering?
+		insertionChannel: make(chan []string, cfg.Capacity), //TODO: cfg param for buffering?
 	}
 
 	s.logger.SetFormatter(&logrus.JSONFormatter{})
@@ -73,63 +69,48 @@ func (s *Store) insertWords(words []string) {
 
 	for _, w := range words {
 		// inserting to frequencies map
-		s.insertFreq(w)
+		e := s.insertFreq(w)
 
-		// inserting to top-5 heap
+		// inserting to top-k heap
+		s.topKStore.insert(e)
+
+		// inserting to the median store
 
 		// inserting to the least heap
 
-		// inserting to the median store
 	}
 }
 
-func (s *Store) insertFreq(word string) {
-	if e, ok := s.frequencies[word]; !ok {
-		s.frequencies[word] = &Element{
+func (s *Store) insertFreq(word string) *Element {
+	var e *Element
+
+	if elem, ok := s.frequencies[word]; !ok {
+		e = &Element{
 			Word:      word,
 			Frequency: 1,
 		}
+
+		s.frequencies[word] = e
 	} else {
-		e.Frequency++
+		elem.Frequency++
+		e = elem
 	}
-}
 
-func (s *Store) insertTop5(word string) {
-
+	return e
 }
 
 func (s *Store) getStats(output chan Stats) {
 	// could be parallelized but those are O(1) operations
-	top5, least, median := s.getTop5(), s.getLeast(), s.getMedian()
+	topK, least, median := s.topKStore.getTopK(), s.getLeast(), s.medianStore.getMedian()
 
 	output <- Stats{
-		Top5:   top5,
+		TopK:   topK,
 		Least:  least,
 		Median: median,
 	}
 }
 
-func (s *Store) getTop5() []Element {
-	topCopy := make([]Element, len(s.topK.Elements))
-
-	for i, e := range s.topK.Elements {
-		topCopy[i] = elementCopy(e)
-	}
-
-	// sort in desc order
-	sort.Slice(topCopy, func(i, j int) bool {
-		return topCopy[i].Frequency > topCopy[i].Frequency
-	})
-
-	return topCopy
-}
-
 func (s *Store) getLeast() Element {
 	least := s.least.Peek().(*Element)
 	return elementCopy(least)
-}
-
-// TODO: implement
-func (s *Store) getMedian() Element {
-	return Element{}
 }
