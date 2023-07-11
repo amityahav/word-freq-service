@@ -25,6 +25,9 @@ the least frequent word and the median frequent word.
   decide for each word its shard and send it to it. when querying, a typical scatter-gather approach can be used in order to aggregate
   all results from all the shards. the coordinator can be horizontally scaled as well as a stateful set and kept behind a load balancer to distribute the load.
 
+### TODOs:
+-[ ] More test coverage including E2E and benchmarks
+
 ### How to run:
 Configuration:
 ````yaml
