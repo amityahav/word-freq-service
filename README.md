@@ -1,10 +1,10 @@
-# Word frequency service
+# Word2Freq
 Small in-memory store of words to frequencies, this service can be queried for the top-k frequent words,
 the least frequent word and the median frequent word.
 
 ### High level overview:
 - Internal data structures for maintaining the above statistics are hash-map and heaps. the hash map is used to store all word-frequency key value pairs.
-  for top-K we maintain a min-heap in order to keep k frequent words fetch-able in O(1) unsorted and O(nlogn) sorted. for the median and least frequent words
+  for top-K we maintain a min-heap in order to keep k frequent words fetch-able in O(k) (which is O(1) when k << n) unsorted and O(klogk) sorted. for the median and least frequent words
   we maintain min-max heap and a min-heap, the max aspect of the min-max heap is used with the other min-heap to maintain the median
   fetch-able in O(1) time, and the min aspect of the min-max is used in order to query the least frequent in O(logn) time,
   this was a tradeoff between maintaining another separate min-heap in order to fetch in O(1) but using more memory.
@@ -27,6 +27,7 @@ the least frequent word and the median frequent word.
 
 ### TODOs:
 - [ ] More test coverage including E2E and benchmarks
+- [ ] Improve logging and add metrics
 
 ### How to run:
 
