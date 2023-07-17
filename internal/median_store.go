@@ -39,8 +39,7 @@ func (s *medianStore) insert(elements map[string]*utils.Element, wg *sync.WaitGr
 		// make sure every element in small is <= every element in large
 		for s.smaller.Len() > 0 && s.larger.Len() > 0 &&
 			s.smaller.PeekMax().Frequency > s.larger.PeekMin().Frequency {
-			d := s.smaller.PeekMax()
-			print(d)
+
 			// remove max from smaller heap
 			maxFromSmaller := utils.PopMax(s.smaller).(*utils.Element)
 

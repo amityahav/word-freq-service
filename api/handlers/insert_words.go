@@ -57,7 +57,7 @@ func (h *insertWordsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *insertWordsHandler) validatePayload(p Payload) ([]string, error) {
 	if !h.payloadRgx.MatchString(p.Words) {
-		return nil, ErrBadPayloadFormant
+		return nil, ErrBadPayloadFormat
 	}
 
 	words := strings.Split(p.Words, ",")
@@ -69,4 +69,4 @@ func (h *insertWordsHandler) validatePayload(p Payload) ([]string, error) {
 	return words, nil
 }
 
-var ErrBadPayloadFormant = errors.New("words list must be of format: a,b,c")
+var ErrBadPayloadFormat = errors.New("words list must be of format: a,b,c")
